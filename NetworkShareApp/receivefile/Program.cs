@@ -1,4 +1,5 @@
 ﻿using NetworkShareLib;
+using System.Threading;
 
 namespace receivefile
 {
@@ -8,6 +9,10 @@ namespace receivefile
         {
             var receiveFile = new ReceiveFile(54000);
             receiveFile.Listen();
+            while(true)
+            {
+                Thread.Sleep(1000);
+            }
         }
     }
 }

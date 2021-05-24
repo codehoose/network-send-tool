@@ -1,4 +1,5 @@
 ﻿using NetworkShareLib;
+using System;
 
 namespace sendfile
 {
@@ -11,6 +12,8 @@ namespace sendfile
 
             var transferFile = new TransferFile(file, hostname);
             transferFile.Start();
+            Console.Write("Press any key");
+            Console.ReadLine();
         }
     }
 }

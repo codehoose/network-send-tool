@@ -62,7 +62,7 @@ namespace NetworkShareLib
                     _processedHeader = true;
 
                     var lengthOfData = bytesReceived - headerSize;
-                    _ms.Write(_buffer, headerSize + 1, lengthOfData);
+                    _ms.Write(_buffer, headerSize, lengthOfData);
                 }
                 else if (_ms.Length < _length)
                 {
@@ -96,7 +96,7 @@ namespace NetworkShareLib
 
                 if (c1 == '\r' && c2=='\n' && c3 =='\r' && c4== '\n')
                 {
-                    pos = i + 3;
+                    pos = i + 4;
                     break;
                 }
             }
