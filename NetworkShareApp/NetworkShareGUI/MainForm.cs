@@ -44,8 +44,10 @@ namespace NetworkShareGUI
                     // Add client to list
                     lstNodes.Items.Add(e.Client);
                     break;
-                case BroadcastMessage.Confirm:
-                    // ????
+                case BroadcastMessage.Initiate:
+                    var receiver = new ReceiveFile(54000);
+                    receiver.TransferComplete += FileReceived_Complete;
+                    receiver.Listen();
                     break;
             }
         }
@@ -64,11 +66,20 @@ namespace NetworkShareGUI
                     var client = lstNodes.SelectedItem as IPEndPoint;
                     var hostname = client.Address.ToString();
 
+                    _broadcaster.InitiatingTransfer(client);
+
                     var transfer = new TransferFile(ofd.FileName, hostname);
                     transfer.TransferComplete += Tranfer_Complete;
                     transfer.Start();
                 }
             }
+        }
+
+        private void FileReceived_Complete(object sender, EventArgs e)
+        {
+            var receiveFile = sender as ReceiveFile;
+            receiveFile.Stop();
+            MessageBox.Show("Transfer complete!");
         }
 
         private void Tranfer_Complete(object sender, EventArgs e)

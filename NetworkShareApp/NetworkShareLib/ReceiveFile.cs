@@ -32,6 +32,12 @@ namespace NetworkShareLib
             _listener.BeginAcceptTcpClient(Client_Connected, _listener);
         }
 
+        public void Stop()
+        {
+            _listener.Stop();
+            _listener = null;
+        }
+
         private void Client_Connected(IAsyncResult result)
         {
             if (result.IsCompleted)

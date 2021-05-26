@@ -13,7 +13,7 @@ namespace NetworkShareLib
         //              ACK - Acknowledge that everything is OK
 
         public const string HEL = nameof(HEL);
-        public const string CON = nameof(CON);
+        public const string INI = nameof(INI);
         public const string ACK = nameof(ACK);
 
         private readonly UdpClient _client;
@@ -45,6 +45,11 @@ namespace NetworkShareLib
             _client.Send(Encoding.ASCII.GetBytes(ACK), ACK.Length, client);
         }
 
+        public void InitiatingTransfer(IPEndPoint client)
+        {
+            _client.Send(Encoding.ASCII.GetBytes(INI), INI.Length, client);
+        }
+
         private void Client_MessageReceived(IAsyncResult result)
         {
             if (result.IsCompleted)
@@ -58,8 +63,8 @@ namespace NetworkShareLib
                     var msg = Encoding.ASCII.GetString(received);
                     switch (msg)
                     {
-                        case CON:
-                            OnMessageReceived(BroadcastMessage.Confirm, sender);
+                        case INI:
+                            OnMessageReceived(BroadcastMessage.Initiate, sender);
                             break;
                         case ACK:
                             OnMessageReceived(BroadcastMessage.Acknowledge, sender);

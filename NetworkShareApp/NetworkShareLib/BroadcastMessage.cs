@@ -3,7 +3,7 @@
     public enum BroadcastMessage
     {
         Hello,
-        Confirm,
+        Initiate,
         Acknowledge
     }
 }
