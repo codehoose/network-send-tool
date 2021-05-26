@@ -27,17 +27,22 @@ namespace NetworkShareLib
             _client = new UdpClient(_port);
         }
 
-        public void SayHello(int port)
+        public void SayHello()
         {
             var helloString = Encoding.ASCII.GetBytes(HEL);
             _client.Send(helloString,
                          helloString.Length, 
-                         new IPEndPoint(IPAddress.Broadcast, port));
+                         new IPEndPoint(IPAddress.Broadcast, _port));
         }
 
         public void Listen()
         {
             _client.BeginReceive(Client_MessageReceived, _client);
+        }
+
+        public void Acknowledge(IPEndPoint client)
+        {
+            _client.Send(Encoding.ASCII.GetBytes(ACK), ACK.Length, client);
         }
 
         private void Client_MessageReceived(IAsyncResult result)
@@ -64,6 +69,8 @@ namespace NetworkShareLib
                             break;
                     }
                 }
+
+                client.BeginReceive(Client_MessageReceived, client);
             }
         }
 

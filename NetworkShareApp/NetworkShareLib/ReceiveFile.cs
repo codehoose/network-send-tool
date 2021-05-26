@@ -17,6 +17,8 @@ namespace NetworkShareLib
         private TcpListener _listener;
         private readonly int _port;
 
+        public event EventHandler TransferComplete;
+
         public ReceiveFile(int port)
         {
             _port = port;
@@ -54,10 +56,13 @@ namespace NetworkShareLib
                     var headerSize = GetHeaderSize(_buffer);
                     if (headerSize > 0)
                     {
+                        // TODO: Process header properly
+
                         var raw = Encoding.ASCII.GetString(_buffer, 0, headerSize);
                         var split = raw.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                        _filename = split[0];
-                        _length = long.Parse(split[1]);
+                        var versionHeader = split[0]; // TODO: Check version #
+                        _filename = split[1];
+                        _length = long.Parse(split[2]);
                     }
                     _processedHeader = true;
 
@@ -80,13 +85,14 @@ namespace NetworkShareLib
                     File.WriteAllBytes(_filename, _ms.ToArray());
                     _ms.Dispose();
                     _ms = null;
+                    TransferComplete?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
 
         private int GetHeaderSize(byte[] buffer)
         {
-            var pos = -1;
+            var length = -1;
             for (int i = 0; i < buffer.Length - 4; i++)
             {
                 char c1 = (char)buffer[i];
@@ -96,12 +102,12 @@ namespace NetworkShareLib
 
                 if (c1 == '\r' && c2=='\n' && c3 =='\r' && c4== '\n')
                 {
-                    pos = i + 4;
+                    length = i + 4;
                     break;
                 }
             }
 
-            return pos;
+            return length;
         }
     }
 }

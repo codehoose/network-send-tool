@@ -7,10 +7,14 @@ namespace NetworkShareLib
 {
     public class TransferFile
     {
+        public static readonly string VersionInfo = "NetworkSharing 1.0";
+
         private TcpClient _client;
         private readonly string _hostname;
         private readonly string _filename;
         private readonly int _port;
+
+        public event EventHandler TransferComplete;
 
         public TransferFile(string filename, string hostname, int port = 54000)
         {
@@ -35,6 +39,7 @@ namespace NetworkShareLib
                 var client = result.AsyncState as TcpClient;
                 client.GetStream().EndWrite(result);
                 client.Close();
+                TransferComplete?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -44,13 +49,14 @@ namespace NetworkShareLib
 
             using (MemoryStream ms = new MemoryStream())
             {
+                // Version # info
                 // Myfile.txt\r\n
                 // 673\r\n
                 // \r\n
                 // 0101001001001010100100102
 
                 FileInfo fi = new FileInfo(_filename);
-
+                WriteString(ms, $"{VersionInfo}\r\n");
                 WriteString(ms, Path.GetFileName(_filename) + "\r\n");
                 WriteString(ms, fi.Length.ToString() + "\r\n\r\n");
 
