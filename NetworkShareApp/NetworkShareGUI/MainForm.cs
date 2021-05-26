@@ -42,7 +42,7 @@ namespace NetworkShareGUI
                     break;
                 case BroadcastMessage.Acknowledge:
                     // Add client to list
-                    lstNodes.Items.Add(e.Client);
+                    Invoke((Action)(() => lstNodes.Items.Add(e.Client)));
                     break;
                 case BroadcastMessage.Initiate:
                     var receiver = new ReceiveFile(54000);
