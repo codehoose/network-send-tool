@@ -68,7 +68,7 @@ namespace NetworkShareGUI
                     break;
                 case BroadcastMessage.SendAcknowledge:
                     _broadcaster.InitiatingTransfer(e.Client);
-                    var transfer = new TransferFile(_fileToTransfer, e.Client.ToString());
+                    var transfer = new TransferFile(_fileToTransfer, e.Client.Address.ToString());
                     transfer.TransferComplete += Tranfer_Complete;
                     transfer.Start();
                     break;
