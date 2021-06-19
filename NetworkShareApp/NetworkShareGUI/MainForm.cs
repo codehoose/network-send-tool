@@ -116,8 +116,8 @@ namespace NetworkShareGUI
                     //var hostname = client.Address.ToString();
                     //_broadcaster.InitiatingTransfer(client);
                     _fileToTransfer = ofd.FileName;
-                    _broadcaster.SendFileRequest(client, "", _fileToTransfer);
-
+                    var hostName = $"{Environment.UserName}@{Environment.MachineName}";
+                    _broadcaster.SendFileRequest(client, hostName, _fileToTransfer);
 
                     //var transfer = new TransferFile(ofd.FileName, hostname);
                     //transfer.TransferComplete += Tranfer_Complete;
