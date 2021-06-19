@@ -31,6 +31,14 @@ namespace NetworkShareGUI
             _broadcaster.MessageReceived += Broadcaster_MessageReceived;
         }
 
+        private void AddToClientList(IPEndPoint client)
+        {
+            if (!lstNodes.Items.Contains(client))
+            {
+                lstNodes.Items.Add(client);
+            }
+        }
+
         private void Broadcaster_MessageReceived(object sender, BroadcastPayload e)
         {
             var broadcaster = sender as Broadcaster;
@@ -40,41 +48,43 @@ namespace NetworkShareGUI
                 case BroadcastMessage.Hello:
                     // Send Acknowldge message
                     broadcaster.Acknowledge(e.Client);
+                    CheckAndAdd(e.Client);
                     break;
                 case BroadcastMessage.Acknowledge:
                     // Add client to list
-                    // Filter this out....
-                    IPEndPoint client = e.Client;
-
-                    var infs = NetworkInterface.GetAllNetworkInterfaces();
-                    bool found = false;
-                    foreach (var i in infs)
-                    {
-                        var addrs = i.GetIPProperties();
-                        foreach (var ip in addrs.UnicastAddresses)
-                        {
-                            if (ip.Address.Equals(client.Address))
-                            {
-                                found = true;
-                                break;
-                            }
-                        }
-
-                        if (found)
-                            break;
-                    }
-
-                    if (!found)
-                    {
-                        Invoke((Action)(() => lstNodes.Items.Add(e.Client)));
-                    }
-
+                    CheckAndAdd(e.Client);
                     break;
                 case BroadcastMessage.Initiate:
                     var receiver = new ReceiveFile(54000);
                     receiver.TransferComplete += FileReceived_Complete;
                     receiver.Listen();
                     break;
+            }
+        }
+
+        private void CheckAndAdd(IPEndPoint client)
+        {
+            var infs = NetworkInterface.GetAllNetworkInterfaces();
+            bool found = false;
+            foreach (var i in infs)
+            {
+                var addrs = i.GetIPProperties();
+                foreach (var ip in addrs.UnicastAddresses)
+                {
+                    if (ip.Address.Equals(client.Address))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found)
+                    break;
+            }
+
+            if (!found)
+            {
+                Invoke((Action)(() => AddToClientList(client)));
             }
         }
 
