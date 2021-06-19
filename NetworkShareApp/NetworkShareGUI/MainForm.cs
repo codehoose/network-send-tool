@@ -15,6 +15,7 @@ namespace NetworkShareGUI
 {
     public partial class MainForm : Form
     {
+        private string _fileToTransfer = "";
         private Broadcaster _broadcaster;
 
         public MainForm()
@@ -50,7 +51,7 @@ namespace NetworkShareGUI
                     broadcaster.Acknowledge(e.Client);
                     CheckAndAdd(e.Client);
                     break;
-                case BroadcastMessage.Acknowledge:
+                case BroadcastMessage.HelloAcknowledge:
                     // Add client to list
                     CheckAndAdd(e.Client);
                     break;
@@ -58,6 +59,18 @@ namespace NetworkShareGUI
                     var receiver = new ReceiveFile(54000);
                     receiver.TransferComplete += FileReceived_Complete;
                     receiver.Listen();
+                    break;
+                case BroadcastMessage.SendRequest:
+                    if (MessageBox.Show($"Receive {e.Filename} from {e.Hostname}?", "Receive File?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        broadcaster.SendFileAcknowledgement(e.Client, e.Filename);
+                    }
+                    break;
+                case BroadcastMessage.SendAcknowledge:
+                    _broadcaster.InitiatingTransfer(e.Client);
+                    var transfer = new TransferFile(_fileToTransfer, e.Client.ToString());
+                    transfer.TransferComplete += Tranfer_Complete;
+                    transfer.Start();
                     break;
             }
         }
@@ -100,13 +113,15 @@ namespace NetworkShareGUI
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     var client = lstNodes.SelectedItem as IPEndPoint;
-                    var hostname = client.Address.ToString();
+                    //var hostname = client.Address.ToString();
+                    //_broadcaster.InitiatingTransfer(client);
+                    _fileToTransfer = ofd.FileName;
+                    _broadcaster.SendFileRequest(client, "", _fileToTransfer);
 
-                    _broadcaster.InitiatingTransfer(client);
 
-                    var transfer = new TransferFile(ofd.FileName, hostname);
-                    transfer.TransferComplete += Tranfer_Complete;
-                    transfer.Start();
+                    //var transfer = new TransferFile(ofd.FileName, hostname);
+                    //transfer.TransferComplete += Tranfer_Complete;
+                    //transfer.Start();
                 }
             }
         }

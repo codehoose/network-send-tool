@@ -4,6 +4,8 @@
     {
         Hello,
         Initiate,
-        Acknowledge
+        HelloAcknowledge,
+        SendRequest,
+        SendAcknowledge
     }
 }
