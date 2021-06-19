@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -42,7 +43,32 @@ namespace NetworkShareGUI
                     break;
                 case BroadcastMessage.Acknowledge:
                     // Add client to list
-                    Invoke((Action)(() => lstNodes.Items.Add(e.Client)));
+                    // Filter this out....
+                    IPEndPoint client = e.Client;
+
+                    var infs = NetworkInterface.GetAllNetworkInterfaces();
+                    bool found = false;
+                    foreach (var i in infs)
+                    {
+                        var addrs = i.GetIPProperties();
+                        foreach (var ip in addrs.UnicastAddresses)
+                        {
+                            if (ip.Address.Equals(client.Address))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        if (found)
+                            break;
+                    }
+
+                    if (!found)
+                    {
+                        Invoke((Action)(() => lstNodes.Items.Add(e.Client)));
+                    }
+
                     break;
                 case BroadcastMessage.Initiate:
                     var receiver = new ReceiveFile(54000);
