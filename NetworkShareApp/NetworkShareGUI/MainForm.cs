@@ -1,14 +1,9 @@
 ﻿using NetworkShareLib;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace NetworkShareGUI
@@ -16,6 +11,7 @@ namespace NetworkShareGUI
     public partial class MainForm : Form
     {
         private string _fileToTransfer = "";
+        private bool _tempZip = false;
         private Broadcaster _broadcaster;
 
         public MainForm()
@@ -110,20 +106,37 @@ namespace NetworkShareGUI
             else
             {
                 var ofd = new OpenFileDialog();
+                ofd.Multiselect = true;
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
                     var client = lstNodes.SelectedItem as IPEndPoint;
-                    //var hostname = client.Address.ToString();
-                    //_broadcaster.InitiatingTransfer(client);
-                    _fileToTransfer = ofd.FileName;
+                    _fileToTransfer = ofd.FileNames[0];
+                    _tempZip = ofd.FileNames.Length > 1;
+
+                    if (ofd.FileNames.Length > 0)
+                    {
+                        _fileToTransfer = MakeZipFile(ofd.FileNames);
+                    }
+
                     var hostName = $"{Environment.UserName}@{Environment.MachineName}";
                     _broadcaster.SendFileRequest(client, hostName, _fileToTransfer);
-
-                    //var transfer = new TransferFile(ofd.FileName, hostname);
-                    //transfer.TransferComplete += Tranfer_Complete;
-                    //transfer.Start();
                 }
             }
+        }
+
+        private string MakeZipFile(string[] files)
+        {
+            var tempFile = Path.GetTempFileName().Replace(".tmp", "") + ".zip";
+            using (var archive = ZipFile.Open(tempFile, ZipArchiveMode.Create))
+            {
+                foreach (var f in files)
+                {
+                    var filename = Path.GetFileName(f);
+                    archive.CreateEntryFromFile(f, filename);
+                }
+            }
+
+            return tempFile;
         }
 
         private void FileReceived_Complete(object sender, EventArgs e)
@@ -136,6 +149,10 @@ namespace NetworkShareGUI
         private void Tranfer_Complete(object sender, EventArgs e)
         {
             MessageBox.Show("Transfer complete!");
+            if (_tempZip && _fileToTransfer.EndsWith(".zip"))
+            {
+                File.Delete(_fileToTransfer);
+            }
         }
     }
 }
